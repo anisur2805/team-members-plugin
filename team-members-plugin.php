@@ -49,6 +49,22 @@ class Z7_Team_Members_Plugin {
 	private function __construct() {
 		$this->includes();
 		$this->load_textdomain();
+
+		add_action( 'admin_init', array( $this, 'z7_team_members_redirect' ) );
+	}
+
+	/**
+	 * Redirects admin to the team members page on first activation.
+	 */
+	public function z7_team_members_redirect() {
+		if ( get_option( 'z7_do_activation_redirect', false ) ) {
+			delete_option( 'z7_do_activation_redirect' );
+
+			if ( is_admin() && current_user_can( 'manage_options' ) ) {
+				wp_safe_redirect( admin_url( 'edit.php?post_type=team_member' ) );
+				exit;
+			}
+		}
 	}
 
 	/**
@@ -88,3 +104,11 @@ function z7_team_members_init() {
 	Z7_Team_Members_Plugin::get_instance();
 }
 add_action( 'plugins_loaded', 'z7_team_members_init' );
+
+/**
+ * Runs on plugin activation - Sets an option for redirection.
+ */
+function z7_team_members_activate() {
+	add_option( 'z7_do_activation_redirect', true );
+}
+register_activation_hook( __FILE__, 'z7_team_members_activate' );
